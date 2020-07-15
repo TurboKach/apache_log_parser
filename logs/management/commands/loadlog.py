@@ -17,10 +17,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for url in options['log_url']:
-            print(url)
             try:
                 logfile_path = download_logfile_by_url(url)
-                print(logfile_path)
 
             except Exception:
                 raise CommandError('Error requesting file "%s"' % url)
@@ -38,7 +36,6 @@ def download_logfile_by_url(url: str = '', path: str = 'data/') -> str:
     """
     #  TODO add progress bar
     try:
-        print(url)
         response = requests.get(url, stream=True)
 
     except requests.RequestException as e:
@@ -49,13 +46,11 @@ def download_logfile_by_url(url: str = '', path: str = 'data/') -> str:
 
     full_path = path + local_filename
 
-    print([f for f in os.scandir()])
-
     with open(full_path, 'wb') as log_file:
         for line in response.iter_lines(delimiter=b'\n'):
             if line:  # filter out keep-alive new lines TODO check necessarity
                 #  TODO write to DB on a go
-                log_file.write(line)
+                log_file.write(line + b'\n')
                 log_file.flush()
 
     return full_path
