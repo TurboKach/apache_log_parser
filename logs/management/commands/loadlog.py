@@ -6,7 +6,7 @@ import os
 from apachelogs import LogParser
 
 #  Init a parser with log format string: http://httpd.apache.org/docs/current/mod/mod_log_config.html
-parser = LogParser("%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"")
+log_parser = LogParser("%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"")
 
 
 class Command(BaseCommand):
@@ -71,6 +71,5 @@ def parse_file_to_db(path: str = '') -> int:
     rows = 0
 
     # TODO dont forget to split URN part from URL
-
 
     return rows

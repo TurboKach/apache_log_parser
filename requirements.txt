@@ -1,7 +1,8 @@
-requests
+requests~=2.24.0
 asgiref==3.2.10
 astroid==2.4.2
 Django==3.0.8
+django-environ==0.4.5
 flake8==3.8.3
 isort==5.1.0
 lazy-object-proxy==1.5.0
@@ -14,3 +15,4 @@ six==1.15.0
 sqlparse==0.3.1
 toml==0.10.1
 wrapt==1.12.1
+apachelogs~=0.5.0
