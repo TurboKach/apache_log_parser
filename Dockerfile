@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 #  копируем из папки с докерфайлом всё в workdir
 COPY . .
 
-RUN python manage.py loadlog https://raw.githubusercontent.com/TurboKach/apache_log_parser/master/data/test_access.log
+RUN python manage.py loadlog https://raw.githubusercontent.com/TurboKach/apache_log_parser/master/test_data/test_access.log
 
 EXPOSE 8000
 
