@@ -2,6 +2,8 @@ FROM python:3.8-alpine
 
 MAINTAINER Maxim Karpov <incognito@turbokach.me>
 
+ENV PYTHONUNBUFFERED 1
+
 WORKDIR /usr/src/app
 
 #  копируем из папки с докерфайлом в workdir (<src> -> <docker_filesystem>)
@@ -16,7 +18,10 @@ RUN python manage.py loadlog https://raw.githubusercontent.com/TurboKach/apache_
 
 EXPOSE 8000
 
-CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]
+CMD ["/usr/src/app/runserver.sh"]
+# as an alternative
+#  python manage.py createsuperuser --username=joe --email=joe@example.com
+
 
 # container launch hints
 # docker build -t my-python-app .

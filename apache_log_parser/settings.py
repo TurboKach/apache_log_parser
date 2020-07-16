@@ -38,6 +38,10 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
+ADMINS = (
+    # ('Your Name', 'your_email@domain.com'),
+    ('admin', 'admin@mysite.com'),
+)
 
 # Application definition
 
