@@ -1,7 +1,10 @@
 from django.core.management.base import BaseCommand, CommandError
 from logs.models import Log
 import requests
-import os
+
+from sys import getsizeof
+
+from tqdm import tqdm
 
 from apachelogs import LogParser, LogEntry
 
@@ -34,11 +37,17 @@ def download_logfile_by_url(url: str = '', path: str = 'data/') -> str:
     :param url: url to download Apache log file
     :return: downloaded file path
     """
-    #  TODO add progress bar
     try:
         response = requests.get(url, stream=True)
-        file_size = response.headers.get('Content-Length')
-        print(file_size)
+
+        content_length = int(response.headers.get('Content-Length', 0))
+
+        progress_bar = tqdm(
+            desc="Downloading log file",
+            total=content_length,
+            unit='B',
+            unit_scale=True
+        )
 
     except requests.RequestException as e:
         print(e)
@@ -49,26 +58,42 @@ def download_logfile_by_url(url: str = '', path: str = 'data/') -> str:
     full_path = path + local_filename
 
     with open(full_path, 'wb') as log_file:
+
         for line in response.iter_lines(delimiter=b'\n'):
-            if line:  # filter out keep-alive new lines TODO check necessarity
-                #  TODO write to DB on a go
+
+            if line:  # filter out keep-alive new lines
 
                 try:
-                    log_line = log_parser.parse(line.decode("utf-8"))
-                    parse_logline_to_db(log_line)
+                    log_entry = log_parser.parse(line.decode("utf-8"))
+                    log = parse_log_entry_to_log_model(log_entry)
+                    write_log_to_db(log)
+
+                    progress_bar.update(getsizeof(line))
+
                 except Exception as e:
                     print(e)
 
                 log_file.write(line + b'\n')
                 log_file.flush()
 
+        progress_bar.close()
+
     return full_path
 
 
-def parse_logline_to_db(logentry: LogEntry) -> Log:
+def write_log_to_db(log: Log):
+    return log.save()
+
+
+def parse_log_entry_to_log_model(logentry: LogEntry) -> Log:
+
+    if logentry is None:
+        return Log()
+
     url = logentry.headers_in["Referer"]
     urn = logentry.request_line.split()[1]
-    uri = url.replace(urn, '')
+    uri = url  # TODO correctly concatenate URI from URL+URN
+
     log = Log(
         ip_address=logentry.remote_host,
         created_date=logentry.request_time,
@@ -80,18 +105,7 @@ def parse_logline_to_db(logentry: LogEntry) -> Log:
         content_length=logentry.bytes_sent,
         user_agent=logentry.headers_in["User-Agent"],
     )
-    log.save()
 
+    log.clean_fields()
 
-def write_log_to_db(log: Log = '') -> int:
-    #  TODO UPSERT
-    """
-    reads apache log file and inserts lines by chunked transactions to DB
-    :param path: path to Apache log file
-    :return: amount of rows inserted to DB
-    """
-    rows = 0
-
-    # TODO dont forget to split URN part from URL
-
-    return rows
+    return log
