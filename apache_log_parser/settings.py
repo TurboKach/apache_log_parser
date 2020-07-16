@@ -106,6 +106,7 @@ DATETIME_INPUT_FORMATS = [
     '%m/%d/%y %H:%M',        # '10/25/06 14:30'
     '%m/%d/%y',              # '10/25/06'
     '%d/%b/%Y:%H:%M:%S %z',  # '12/Dec/2015:18:25:11 +0100' <- like in apache logs
+    '%Y-%m-%d %H:%M:%S%z',     # '2006-10-25 14:30:59+0100'
 ]
 
 # Password validation

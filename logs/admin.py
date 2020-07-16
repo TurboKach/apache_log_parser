@@ -15,7 +15,7 @@ class LogAdmin(admin.ModelAdmin):
         'urn',
         'response_code',
         'content_length',
-        'browser'
+        'user_agent'
     )
     fieldsets = (
         (None, {
@@ -37,7 +37,7 @@ class LogAdmin(admin.ModelAdmin):
             'fields': (
                 'response_code',
                 'content_length',
-                'browser'
+                'user_agent'
             )
         })
     )
