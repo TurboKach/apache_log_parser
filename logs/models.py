@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 
 
 class Log(models.Model):
@@ -11,9 +10,9 @@ class Log(models.Model):
     url = models.URLField(blank=True, null=True)  # http://almhuette-raith.at/administrator/
     urn = models.CharField(max_length=255)  # /administrator/index.php
     response_code = models.PositiveIntegerField()
-    content_length = models.PositiveIntegerField()
+    content_length = models.PositiveIntegerField(blank=True, null=True)
 
-    user_agent = models.CharField(max_length=200, blank=True, null=True)
+    user_agent = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.ip_address

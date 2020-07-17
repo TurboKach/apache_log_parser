@@ -1,42 +1,73 @@
-from django.core.management.base import BaseCommand, CommandError
-from logs.models import Log
-import requests
-
 from sys import getsizeof
 
+import requests
+from apachelogs import LogEntry, LogParser
+from django.core.management.base import BaseCommand, CommandError
 from tqdm import tqdm
 
-from apachelogs import LogParser, LogEntry
+from logs.models import Log
 
 #  Init a parser with log format string: http://httpd.apache.org/docs/current/mod/mod_log_config.html
 log_parser = LogParser("%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" \"%l\"")
 
 
 class Command(BaseCommand):
-    help = 'Downloads Apache log file and inserts its events to database'
+    help = 'Download Apache log file and insert its events to database.\n' \
+           'Pass a --size argument with value in Megabytes to set size limit for downloading a file'
 
     def add_arguments(self, parser):
-        parser.add_argument('log_url', nargs='+', type=str)
+        # positional arguments
+        parser.add_argument(
+            'log_url',
+            nargs='?',
+            type=str,
+        )
+
+        # named (optional) arguments
+        parser.add_argument(
+            '-s',
+            '--size',
+            nargs='?',
+            type=int,
+            default=0,
+            action='store',
+            help='size limit for downloading a file in MB'
+        )
 
     def handle(self, *args, **options):
-        for url in options['log_url']:
+        print(options)
+        if options['log_url'] is None:
+            raise CommandError('URL could not be empty!')
+
+        else:
+            url = options['log_url']
+
+            if options['size'] < 0:
+                size = options['size']
+                raise ValueError(f'Invalid size: {size}')
+
             try:
-                logfile_path = download_logfile_by_url(url)
+                logfile_path = download_logfile_by_url(url, max_size=options['size'])
 
-            except Exception:
-                raise CommandError('Error requesting file "%s"' % url)
+                self.stdout.write(self.style.SUCCESS('Successfully downloaded and parsed log file "%s"' % url))
+                self.stdout.write(f'Local path to file: {logfile_path}')
 
-            self.stdout.write(self.style.SUCCESS('Successfully downloaded and parsed log file "%s"' % url))
-            self.stdout.write(f'Path to this file: {logfile_path}')
+            except Exception as e:
+                raise CommandError(f'Error requesting file.\n{e}')
 
 
-def download_logfile_by_url(url: str = '', path: str = 'data/') -> str:
+def download_logfile_by_url(url: str = '', max_size: int = 0, path: str = 'data/') -> str:
     """
     downloads Apache log file to /data directory
-    :param path: data folder path to save file into
     :param url: url to download Apache log file
+    :param max_size: maximum size limit while downloading a part of file
+    :param path: data folder path to save file into
     :return: downloaded file path
     """
+    downloaded_total = 0
+
+    max_size = max_size * 1e+6  # convert to bytes
+
     try:
         response = requests.get(url, stream=True)
 
@@ -51,7 +82,11 @@ def download_logfile_by_url(url: str = '', path: str = 'data/') -> str:
 
     except requests.RequestException as e:
         print(e)
-        return ''
+        raise
+
+    except Exception as e:
+        print(e)
+        raise
 
     local_filename = url.split('/')[-1]
 
@@ -63,15 +98,25 @@ def download_logfile_by_url(url: str = '', path: str = 'data/') -> str:
 
             if line:  # filter out keep-alive new lines
 
+                # if max download size reached
+                if downloaded_total >= max_size > 0:
+                    progress_bar.close()
+                    return full_path
+
                 try:
+                    line_size = getsizeof(line)
+
                     log_entry = log_parser.parse(line.decode("utf-8"))
                     log = parse_log_entry_to_log_model(log_entry)
                     write_log_to_db(log)
 
-                    progress_bar.update(getsizeof(line))
+                    progress_bar.update(line_size)
+
+                    downloaded_total += line_size
 
                 except Exception as e:
                     print(e)
+                    raise
 
                 log_file.write(line + b'\n')
                 log_file.flush()
@@ -86,7 +131,6 @@ def write_log_to_db(log: Log):
 
 
 def parse_log_entry_to_log_model(logentry: LogEntry) -> Log:
-
     if logentry is None:
         return Log()
 
