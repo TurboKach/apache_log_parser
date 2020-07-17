@@ -5,3 +5,8 @@
 venv/
 
 .idea
+
+db.sqlite3
+logs/migrations
+data/access.log
+data/test_access.log

@@ -18,3 +18,11 @@ class Command(BaseCommand):
                 admin.is_active = True
                 admin.is_admin = True
                 admin.save()
+
+                admin_user = User.objects.get(username=admin)
+
+                # check admin User created succesfully
+                if admin_user is not None:
+                    self.stdout.write(self.style.SUCCESS('Successfully created User: "%s"' % admin_user.username))
+                else:
+                    self.stdout.write(self.style.ERROR('ERROR! Cannot create User: "%s"' % admin_user.username))

@@ -39,7 +39,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        print(options)
+
         if options['log_url'] is None:
             raise CommandError('URL could not be empty!')
 

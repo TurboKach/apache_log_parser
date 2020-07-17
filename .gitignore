@@ -130,4 +130,9 @@ dmypy.json
 
 # idea
 .idea
+
+# data
 /logs/migrations/
+!/data/
+data/access.log
+data/test_access.log
