@@ -1,8 +1,9 @@
 # apache_log_parser
 
 ##Getting started
-1. Build your application container: `docker build -t apache-log-parser .`
-2. Run previously built container: `docker run -d -it -p 8000:8000 --rm --name alp-app apache-log-parser`  
+1. Build and up your containers: `docker-compose up -d --build`  
+2. Visit http://127.0.0.1:8000/ to see it works
+
 
 Custom Django management commands:
  - `python manage.py loadlog <url:str>`  
