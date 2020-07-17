@@ -4,7 +4,9 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-
+    """
+    Create default admin user if no user exists
+    """
     def handle(self, *args, **options):
         if User.objects.count() == 0:
             for user in settings.ADMINS:

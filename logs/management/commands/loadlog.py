@@ -12,8 +12,12 @@ log_parser = LogParser("%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent
 
 
 class Command(BaseCommand):
+    """
+    Custom management command:
+    python manage.py loadlog <url:str> (-s, --size <int>)
+    """
     help = 'Download Apache log file and insert its events to database.\n' \
-           'Pass a --size argument with value in Megabytes to set size limit for downloading a file'
+           'Pass a -s or --size argument with value in Megabytes to set size limit for downloading a file'
 
     def add_arguments(self, parser):
         # positional arguments
@@ -58,9 +62,9 @@ class Command(BaseCommand):
 
 def download_logfile_by_url(url: str = '', max_size: int = 0, path: str = 'data/') -> str:
     """
-    downloads Apache log file to /data directory
+    downloads Apache log file to data/ directory and writes its lines into DB
     :param url: url to download Apache log file
-    :param max_size: maximum size limit while downloading a part of file
+    :param max_size: size limit for downloading a part of file
     :param path: data folder path to save file into
     :return: downloaded file path
     """
@@ -73,6 +77,7 @@ def download_logfile_by_url(url: str = '', max_size: int = 0, path: str = 'data/
 
         content_length = int(response.headers.get('Content-Length', 0))
 
+        # initialize progress bar with total file size
         progress_bar = tqdm(
             desc="Downloading log file",
             total=content_length,
@@ -94,32 +99,38 @@ def download_logfile_by_url(url: str = '', max_size: int = 0, path: str = 'data/
 
     with open(full_path, 'wb') as log_file:
 
+        # iterate over the file by lines to prevent its content at once
         for line in response.iter_lines(delimiter=b'\n'):
 
             if line:  # filter out keep-alive new lines
 
-                # if max download size reached
+                # if set maximum download size reached
                 if downloaded_total >= max_size > 0:
                     progress_bar.close()
                     return full_path
 
                 try:
+                    # get byte size of loaded line
                     line_size = getsizeof(line)
 
+                    # write log line to local storage
+                    log_file.write(line + b'\n')
+                    log_file.flush()
+
+                    # prepare loaded log to save in DB
                     log_entry = log_parser.parse(line.decode("utf-8"))
                     log = parse_log_entry_to_log_model(log_entry)
                     write_log_to_db(log)
 
+                    # update progress bar with downloaded size
                     progress_bar.update(line_size)
 
+                    # accumulate total downloaded bytes to check if limit exceeded
                     downloaded_total += line_size
 
                 except Exception as e:
                     print(e)
                     raise
-
-                log_file.write(line + b'\n')
-                log_file.flush()
 
         progress_bar.close()
 
@@ -127,10 +138,20 @@ def download_logfile_by_url(url: str = '', max_size: int = 0, path: str = 'data/
 
 
 def write_log_to_db(log: Log):
+    """
+    Saves apache Log instance to DB
+    :param log: Log class instance
+    :return:
+    """
     return log.save()
 
 
 def parse_log_entry_to_log_model(logentry: LogEntry) -> Log:
+    """
+    Converts LogEntry instance to apache DB model Log
+    :param logentry: LogEntry object instance
+    :return: Log object instance
+    """
     if logentry is None:
         return Log()
 

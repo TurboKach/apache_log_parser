@@ -4,6 +4,9 @@ from .models import Log
 
 
 class LogAdmin(admin.ModelAdmin):
+    """
+    This class describes fields displayed in admin
+    """
     date_hierarchy = 'created_date'
     empty_value_display = '-'
     list_display = (

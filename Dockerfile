@@ -6,21 +6,22 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /usr/src/app
 
-#  копируем из папки с докерфайлом в workdir (<src> -> <docker_filesystem>)
+#  copy requirements to workdir (<src> -> <docker_filesystem>)
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-#  копируем из папки с докерфайлом всё в workdir
+#  copy project folder contents to workdir
 COPY . .
 
+#
 RUN python manage.py loadlog https://raw.githubusercontent.com/TurboKach/apache_log_parser/master/test_data/test_access.log
 
 EXPOSE 8000
 
 CMD ["/usr/src/app/runserver.sh"]
 # as an alternative
-#  python manage.py createsuperuser --username=joe --email=joe@example.com
+#  python manage.py createsuperuser --username=admin --email=admin@example.com
 
 
 # container launch hints
