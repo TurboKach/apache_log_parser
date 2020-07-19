@@ -45,7 +45,10 @@ class LogAdmin(admin.ModelAdmin):
             )
         })
     )
-    list_filter = ('created_date', )
+    search_fields = (
+        'ip_address',
+        'http_method'
+    )
 
 
 admin.site.register(Log, LogAdmin)

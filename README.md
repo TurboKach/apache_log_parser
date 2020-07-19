@@ -1,6 +1,6 @@
 # apache_log_parser
 
-##Getting started
+## Getting started
 1. Build and up your containers: `docker-compose up -d --build`  
 2. Visit http://127.0.0.1:8000/ to see it works
 
