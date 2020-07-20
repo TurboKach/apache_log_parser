@@ -7,6 +7,7 @@ class LogAdmin(admin.ModelAdmin):
     """
     This class describes fields displayed in admin
     """
+
     date_hierarchy = 'created_date'
     empty_value_display = '-'
     list_display = (
@@ -47,7 +48,8 @@ class LogAdmin(admin.ModelAdmin):
     )
     search_fields = (
         'ip_address',
-        'http_method'
+        'http_method',
+        'url',
     )
 
 
