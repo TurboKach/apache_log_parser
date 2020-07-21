@@ -23,7 +23,9 @@ services:
     env_file:
       - .env.db
   nginx:
-    build: ./nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     volumes:
       - static_volume:/home/app/web/staticfiles
     ports:

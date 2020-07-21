@@ -91,13 +91,13 @@ WSGI_APPLICATION = 'apache_log_parser.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': env('SQL_ENGINE'),
-        'NAME': env('SQL_DATABASE'),
-        'USER': env('SQL_USER'),
-        'PASSWORD': env('SQL_PASSWORD'),
-        'HOST': env('SQL_HOST'),
-        'PORT': env('SQL_PORT'),
+    "default": {
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.environ.get("SQL_USER", "user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
 
