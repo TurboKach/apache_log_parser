@@ -2,7 +2,8 @@
 
 ## Getting started
 1. Build and up your containers: `docker-compose -f docker-compose.prod.yml up -d --build`  
-2. Visit http://127.0.0.1:1337/ to see it works
+2. Visit http://127.0.0.1:1337/ to see it works  
+3. Login as `admin:admin`
 
 
 Custom Django management commands:
