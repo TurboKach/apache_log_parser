@@ -11,6 +11,7 @@ then
     echo "PostgreSQL started"
 fi
 
+mkdir data
 python manage.py makemigrations --noinput
 python manage.py makemigrations logs --noinput
 python manage.py migrate --noinput
