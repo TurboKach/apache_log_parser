@@ -11,7 +11,7 @@ then
     echo "PostgreSQL started"
 fi
 
-python manage.py makemigrations--noinput
+python manage.py makemigrations --noinput
 python manage.py makemigrations logs --noinput
 python manage.py migrate --noinput
 python manage.py loadlog https://raw.githubusercontent.com/TurboKach/apache_log_parser/master/test_data/test_access.log
